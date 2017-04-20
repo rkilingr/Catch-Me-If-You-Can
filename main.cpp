@@ -452,17 +452,17 @@ void rect(){
     //output(600,700,"Catch Me If You Can",2);
     glPushMatrix();
     glTranslatef(0,textPos3,0);
-    drawObject("Title.png",400,1000,610,34);
+    drawObject("resources/Title.png",400,1000,610,34);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(textPos1,0,0);
-    drawObject("NewGame.png",-400,500,347,82);
-    drawObject("HighScore.png",-400,300,347,82);
+    drawObject("resources/NewGame.png",-400,500,347,82);
+    drawObject("resources/HighScore.png",-400,300,347,82);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(textPos2,0,0);
-    drawObject("Instructions.png",1500,400,347,82);
-    drawObject("Exit.png",1500,200,347,82);
+    drawObject("resources/Instructions.png",1500,400,347,82);
+    drawObject("resources/Exit.png",1500,200,347,82);
     glPopMatrix();
     textMotion();
     //output(600,600,"1. New Game",1);
@@ -563,7 +563,7 @@ if(scoreInt>highScoreInt)
 
 void gameScreen(){
     glPushMatrix();
-    RenderScene("mario-underground-end11.png",0,0,1366,768);glPopMatrix();
+    RenderScene("resources/mario-underground-end11.png",0,0,1366,768);glPopMatrix();
     chickenDrawHandler();
     eggDrawHandler();
 
@@ -614,7 +614,7 @@ void menuChickMove(){
 
 void menuScreen(){
     glPushMatrix();
-    RenderScene("WUUJj.png",0,0,1366,768);
+    RenderScene("resources/WUUJj.png",0,0,1366,768);
     rect();
     glPopMatrix();
 
