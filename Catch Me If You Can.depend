@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1492699378 source:/home/ravikiran/Catch Me If You Can/main.cpp
+1492775186 source:/home/ravikiran/Catch Me If You Can/main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
@@ -11,4 +11,30 @@
 	"SOIL.h"
 
 1215434608 /home/ravikiran/Catch Me If You Can/SOIL.h
+
+1492778007 source:/media/sf_G_DRIVE/New folder (3)/Catch Me If You Can/main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<string.h>
+	<GL/glut.h>
+	<iostream>
+	<time.h>
+	"SOIL.h"
+
+1215434608 /media/sf_G_DRIVE/New folder (3)/Catch Me If You Can/SOIL.h
+
+1492774414 source:/media/ravikiran/01D0374181A1F060/New folder (3)/Catch Me If You Can/main.cpp
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	<math.h>
+	<string.h>
+	<GL/glut.h>
+	<iostream>
+	<time.h>
+	"SOIL.h"
+
+1215434608 /media/ravikiran/01D0374181A1F060/New folder (3)/Catch Me If You Can/SOIL.h
 

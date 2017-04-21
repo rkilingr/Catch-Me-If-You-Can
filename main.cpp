@@ -12,11 +12,44 @@
 #define SINSUM 114.5886501
 using namespace std;
 static bool spinning = true,menuFlag=true,gameFlag=false,yolkFlag=false,leftButtonFlag=false,rightButtonFlag=false,moveChickenFlag=false;
-GLuint tex_2d,tex1_2d;
+GLuint tex_2d,tex1_2d,tex2_2d[30];
 static GLfloat currentAngleOfRotation = 0.0;
-static const int FPS = 120;
-GLfloat rotation = 90.0;int counter=0;
-float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuChickPos;int eggBreaks=0;
+static int FPS = 120;
+GLfloat rotation = 90.0;int counter=0;int width, height;
+float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuChickPos;int eggBreaks=0,value=2;
+
+void drawObject(int num,float x,float y,float xsize,float ysize)
+{
+    //Clears the window with current clearing color
+
+       //Sets current drawing color
+       //NOTE: Values are in float format, so 1.0f is full intensity
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    //Draws a square/rectangle with above drawing color
+
+    glEnable(GL_TEXTURE_2D);
+
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+    glBindTexture(GL_TEXTURE_2D, tex2_2d[num]);
+
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+
+    glBegin(GL_POLYGON);
+        glTexCoord2f(0.0, 0.0); glVertex2f(x, y);
+        glTexCoord2f(1.0, 0.0); glVertex2f(x, y+ysize);
+        glTexCoord2f(1.0, 1.0); glVertex2f(x+xsize, y+ysize);
+        glTexCoord2f(0.0, 1.0); glVertex2f(x+xsize, y);
+    glEnd();
+
+    //Swaps the onscreen and offscreen buffers and flushes them
+    //glutSwapBuffers();
+    glDisable(GL_TEXTURE_2D);
+
+}
+
 class FallingEgg{
 public:
 float x,y,eggSize,posYEgg=0,eggVelocity=0,posnBasket=0;
@@ -55,7 +88,7 @@ void draw(){
     else
     glTranslatef(posnBasket,this->posYEgg,0);
     if(!yolkFlag)
-        this->drawEgg(0.27,0.35,eggColor);
+        this->drawEgg(0.38,0.35,eggColor);
     else
         this->drawYolk();
 
@@ -79,7 +112,8 @@ void setDisabled(){
 void drawEgg(float radiusX,float radiusY,GLfloat *color){
 
    int i;
-    glColor3fv(color);
+   drawObject(9,x,y,radiusX*this->eggSize,radiusY*this->eggSize);
+   /* glColor3fv(color);
    glBegin(GL_POLYGON);
 
    for(i=0;i<360;i++)
@@ -89,15 +123,16 @@ void drawEgg(float radiusX,float radiusY,GLfloat *color){
                   sin(rad)*radiusY*this->eggSize+y);
    }
 
-   glEnd();
+   glEnd();*/
 
 }
 void drawYolk(){
     float sizeOuter=35,sizeInner=23;
-    GLfloat outer[3]={1.0,1.0,1.0};
+    drawObject(10,x,y,sizeOuter,sizeInner);
+    /*GLfloat outer[3]={1.0,1.0,1.0};
     this->drawEgg(0.35*sizeOuter/eggSize,0.25*sizeOuter/eggSize,outer);
     GLfloat inner[3]={1.0,0.78823529,0.01568627};
-    this->drawEgg(0.35*sizeInner/eggSize,0.25*sizeInner/eggSize,inner);
+    this->drawEgg(0.35*sizeInner/eggSize,0.25*sizeInner/eggSize,inner);*/
 
     }
 
@@ -115,7 +150,59 @@ void mouse(int button, int state, int x, int y) {
     menuFlag=false;gameFlag=true;counter=0;
   }
 }
+/*
+if(spinning){
+    glColor3f(1.0, 0.0, 0.0);
+    //output(600,700,"Catch Me If You Can",2);
+    glPushMatrix();
+    glTranslatef(0,textPos3,0);
+    drawObject("resources/Title.png",400,1000,610,34);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(textPos1,0,0);
+    drawObject("resources/NewGame.png",-400,500,347,82);
+    drawObject("resources/HighScore.png",-400,300,347,82);
+    glPopMatrix();
+    glPushMatrix();
+    glTranslatef(textPos2,0,0);
+    drawObject("resources/Instructions.png",1500,400,347,82);
+    drawObject("resources/Exit.png",1500,200,347,82);
+    glPopMatrix();
+    textMotion();
+    //output(600,600,"1. New Game",1);
+    //output(600,500,"2. Instructions",1);
+    //output(600,400,"3. High Score",1);
+    //output(600,300,"4. Exit",1);
+    }
+*/
 
+void load_textures(){int i;
+char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title.png","resources/NewGame.png","resources/HighScore.png"
+,"resources/Instructions.png","resources/Exit.png","resources/Basket.png","resources/abstract_bird.png",
+"resources/white-egg-md.png","resources/Yolk.png","resources/ground.png","resources/wrong.png","resources/wrong1.png"
+,"resources/fence.png","resources/GameOver.png","resources/Levelup.png"};
+for(i=0;i<19;i++)
+tex2_2d[i] = SOIL_load_OGL_texture
+    (
+        path[i],
+        SOIL_LOAD_RGBA,
+        SOIL_CREATE_NEW_ID,
+        SOIL_FLAG_NTSC_SAFE_RGB
+    );
+    glShadeModel(GL_SMOOTH);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+//............BIRD...............
+//texture 1 active
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+
+
+}
 
 void init(){
     // set clear color to black
@@ -241,7 +328,7 @@ glFlush();
 
 //Egg
 void missMark(float x,float y,GLfloat* color){
-glColor3fv(color);
+/*glColor3fv(color);
 glBegin(GL_POLYGON);
 glVertex2d(0+x,50+y);
 glVertex2d(20+x,50+y);
@@ -253,7 +340,11 @@ glVertex2d(0+x,0+y);
 glVertex2d(40+x,50+y);
 glVertex2d(60+x,50+y);
 glVertex2d(20+x,0+y);
-glEnd();
+glEnd();*/
+if(color[0]==1.0)
+drawObject(12,x,y,60,50);
+else
+drawObject(13,x,y,60,50);
 }
 
 //Function for drawing Basket
@@ -349,7 +440,7 @@ void reshape(int width, int height){
     glMatrixMode(GL_MODELVIEW);
     glutPostRedisplay();
 }
-void RenderScene(char *path,float x,float y,float xsize,float ysize)
+void RenderScene(int num,float x,float y,float xsize,float ysize)
 {
     //Clears the window with current clearing color
 
@@ -364,19 +455,8 @@ void RenderScene(char *path,float x,float y,float xsize,float ysize)
 
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    if (counter == 0)
-    {
-    tex_2d = SOIL_load_OGL_texture
-    (
-        path,
-        SOIL_LOAD_RGBA,
-        SOIL_CREATE_NEW_ID,
-        SOIL_FLAG_NTSC_SAFE_RGB
-    );
-    counter = 1;
-    }
 
-    glBindTexture(GL_TEXTURE_2D, tex_2d);
+    glBindTexture(GL_TEXTURE_2D, tex2_2d[num]);
 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
@@ -393,47 +473,7 @@ void RenderScene(char *path,float x,float y,float xsize,float ysize)
     glDisable(GL_TEXTURE_2D);
 
 }
-void drawObject(char *path,float x,float y,float xsize,float ysize)
-{
-    //Clears the window with current clearing color
 
-       //Sets current drawing color
-       //NOTE: Values are in float format, so 1.0f is full intensity
-    glColor3f(0.0f, 0.0f, 0.0f);
-
-    //Draws a square/rectangle with above drawing color
-    glRectf(x, y,x+xsize, y+ysize);
-
-    glEnable(GL_TEXTURE_2D);
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-
-    tex1_2d = SOIL_load_OGL_texture
-    (
-        path,
-        SOIL_LOAD_RGBA,
-        SOIL_CREATE_NEW_ID,
-        SOIL_FLAG_NTSC_SAFE_RGB
-    );
-
-    glBindTexture(GL_TEXTURE_2D, tex1_2d);
-
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-
-    glBegin(GL_POLYGON);
-        glTexCoord2f(0.0, 0.0); glVertex2f(x, y);
-        glTexCoord2f(1.0, 0.0); glVertex2f(x, y+ysize);
-        glTexCoord2f(1.0, 1.0); glVertex2f(x+xsize, y+ysize);
-        glTexCoord2f(0.0, 1.0); glVertex2f(x+xsize, y);
-    glEnd();
-
-    //Swaps the onscreen and offscreen buffers and flushes them
-    //glutSwapBuffers();
-    glDisable(GL_TEXTURE_2D);
-
-}
 //Menu
 float textPos1=0,textPos2=0,textPos3=0;int textmotionCount=0;
 void textMotion(){
@@ -450,19 +490,20 @@ void rect(){
     if(spinning){
     glColor3f(1.0, 0.0, 0.0);
     //output(600,700,"Catch Me If You Can",2);
+
     glPushMatrix();
     glTranslatef(0,textPos3,0);
-    drawObject("resources/Title.png",400,1000,610,34);
+    drawObject(2,400,1000,610,100);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(textPos1,0,0);
-    drawObject("resources/NewGame.png",-400,500,347,82);
-    drawObject("resources/HighScore.png",-400,300,347,82);
+    drawObject(3,-400,500,347,82);
+    drawObject(4,-400,300,347,82);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(textPos2,0,0);
-    drawObject("resources/Instructions.png",1500,400,347,82);
-    drawObject("resources/Exit.png",1500,200,347,82);
+    drawObject(5,1500,400,347,82);
+    drawObject(6,1500,200,347,82);
     glPopMatrix();
     textMotion();
     //output(600,600,"1. New Game",1);
@@ -497,9 +538,9 @@ void eggDrawHandler(){
     for(i=0;i<8;i++){
     if(egg[i].isEnabled()){
         if(!egg[i].collisionFlag)
-        egg[i].setVar(xegg[i],650,size2);
+        egg[i].setVar(xegg[i],650,size2+25);
         else
-        egg[i].setVar(posX,650,size2);
+        egg[i].setVar(posX,650,size2+25);
         glPushMatrix();egg[i].draw();glPopMatrix();
 
     } }
@@ -508,18 +549,22 @@ void chickenDrawHandler(){
         glPushMatrix();
         //Chicken draw Call
         glTranslatef(chickenPos,0,0);
-        drawChicken(0,620,sizeChicken);
-        GLfloat eggColor[3]={1.0,1.0,1.0};
+        //drawChicken(0,620,sizeChicken);
+        drawObject(8,0,620,150*sizeChicken,120*sizeChicken);
         glPopMatrix();
 
 }
 float sizeBasket=250;
-
+int level=0;
 char tempScore[30],tempScore1[30];
-int scoreInt=0,highScoreInt=0;
+int scoreInt=0,highScoreInt=0;int leveldisp=-1;
 void levelUp(){
-    speed+=2;
+    FPS+=40;
+    value-=0.000000001;
+    level++;
+    eggBreaks=0;leveldisp=0;
 }
+float leveldispPos=1500,difflevel=-1000/SINSUM;
 void scoreUp(){
 char score[30]="Score:",highScore[30]="HighScore:";
 char scoreChar[10],highScoreChar[10];
@@ -528,7 +573,12 @@ if(eggBreaks>=3)
 scoreInt=0;
 else
 scoreInt+=10;
-if(scoreInt>highScoreInt)highScoreInt=scoreInt;
+if(scoreInt==200&&level==0)
+    levelUp();
+//if(scoreInt==280&&level==1)
+    //levelUp();
+
+if(scoreInt>highScoreInt){highScoreInt=scoreInt;}
 strcpy(tempScore,score);sprintf(scoreChar,"%d",scoreInt);
 strcpy(tempScore1,highScore);sprintf(highScoreChar,"%d",highScoreInt);
 strcat(tempScore,scoreChar);
@@ -545,11 +595,16 @@ glVertex2d(x1+b,y1+l);
 glVertex2d(x1+b,y1);
 glEnd();
 }
-int overCounter=0,t=0;
+int overCounter=0,t=0;float movevariable=0,diff2=-1000/SINSUM,posScreen=1500;
 void gameOverScreen(){
 overCounter++;
-drawRectangle(500,284,400,200);
-output(643,384,"Game Over!!",1);
+drawObject(15,posScreen,768/2.0-45,606*0.5,336*0.5);
+if(movevariable<181)
+{
+posScreen+=diff2*sin((movevariable++)*DEG2RAD);
+}
+//drawRectangle(500,284,400,200);
+//output(643,384,"Game Over!!",1);
 if(overCounter>=240)
 {gameFlag=false;menuFlag=true;
 for(t=0;t<8;t++)
@@ -557,20 +612,27 @@ for(t=0;t<8;t++)
 overCounter=0;
 if(scoreInt>highScoreInt)
     highScoreInt=scoreInt;scoreInt=0;
-    scoreUp();eggBreaks=0;textPos1=0;textPos2=0;textPos3=0;textmotionCount=0;counter=0;
+    scoreUp();eggBreaks=0;textPos1=0;textPos2=0;textPos3=0;textmotionCount=0;counter=0;FPS=120;value=2;posScreen=1500;movevariable=0;leveldispPos=1500;leveldisp=-1;
 }
 }
 
 void gameScreen(){
-    glPushMatrix();
-    RenderScene("resources/mario-underground-end11.png",0,0,1366,768);glPopMatrix();
-    chickenDrawHandler();
+    glPushMatrix();drawObject(1,0,68,1366,700);glPopMatrix();
+    drawObject(11,-1000,0,4000,68);
+    drawObject(11,-1000,567,4000,68);
+    if(leveldisp>=0&&leveldispPos>=-100){
+    drawObject(16,leveldispPos,768/2.0-45,356*0.5,95*0.5);
+    leveldispPos+=difflevel*sin((leveldisp++)*DEG2RAD);
+    }
+    if(leveldisp>=181)leveldisp=-1;
     eggDrawHandler();
-
+    chickenDrawHandler();
+   // drawObject(14,0,620,1366,100);
     glPushMatrix();
     glTranslatef(posX,posY,posZ);
     //Bakset draw call
-    drawBasket(0,50,sizeBasket);
+    //drawBasket(0,50,sizeBasket);
+    drawObject(7,0,50,0.22*sizeBasket,0.32*sizeBasket);
     glPopMatrix();
 
     output(1100,740,tempScore,1);
@@ -599,6 +661,7 @@ void gameScreen(){
     }
     if(eggBreaks>=3){
         gameOverScreen();}
+
     glutSwapBuffers();
 
     glFlush();
@@ -614,13 +677,14 @@ void menuChickMove(){
 
 void menuScreen(){
     glPushMatrix();
-    RenderScene("resources/WUUJj.png",0,0,1366,768);
+    RenderScene(0,0,0,1366,768);
     rect();
     glPopMatrix();
 
     glPushMatrix();
     glTranslatef(0,menuChickPos,0);
-    menuChicken(300,650,1.0);
+    drawObject(9,300,650,300*0.3,258*0.3);
+    //menuChicken(300,650,1.0);
     glPopMatrix();
     menuChickMove();
     glutSwapBuffers();
@@ -696,22 +760,22 @@ void blank()
 }
 
 //TImer function for realtime movement
-float x=0.009,y[4],basketAcceleration=0.02,basketVelocity=0;int i=-1,j=0;
+float x=0.015,y[4],basketAcceleration=0.02,basketVelocity=0;int i=-1,j=0;
 bool flag=true;
-float value=1.5;
+
 void basketHandler(){
 //Handles the motion of the basket for catching
 if(leftButtonFlag&&(posX>100)){
     if(basketVelocity>0)
         basketVelocity-=(0.05*value+basketAcceleration*value);
-    else if(basketVelocity>-4*value)
+    else if(basketVelocity>-4.0*value)
         basketVelocity-=basketAcceleration*value;
     posX+=basketVelocity;
   }
   else if(rightButtonFlag&&(posX<1200)){
     if(basketVelocity<0)
         basketVelocity+=(0.05*value+basketAcceleration*value);
-    else if(basketVelocity<4*value)
+    else if(basketVelocity<4.0*value)
         basketVelocity+=basketAcceleration*value;
     posX+=basketVelocity*value;
   }
@@ -861,6 +925,7 @@ int main(int argc, char** argv){
     glutInitWindowPosition(0, 0);
     glutCreateWindow("Practice 1");
     glutDisplayFunc(display);
+    load_textures();
     init();//glutReshapeFunc(reshape);
     glutTimerFunc(100, timer, 0);
     glutSpecialUpFunc(keyboardup);
@@ -868,5 +933,4 @@ int main(int argc, char** argv){
     glutSpecialFunc(keyboardown);
     glutMouseFunc(mouse);
     glutMainLoop();
-
 }
