@@ -5,19 +5,23 @@
 #include<math.h>
 #include<string.h>
 #include <GL/glut.h>
+#include<set>
 #include <iostream>
 #include<time.h>
 #include "SOIL.h"
 #define DEG2RAD 0.01745329251
 #define SINSUM 114.5886501
 using namespace std;
-static bool spinning = true,menuFlag=true,gameFlag=false,yolkFlag=false,leftButtonFlag=false,rightButtonFlag=false,moveChickenFlag=false;
+static bool spinning = true,menuFlag=true,gameFlag=false,yolkFlag=false,leftButtonFlag=false,rightButtonFlag=false,diffNeg=false,moveChickenFlag=false,instrFlag=false,instrFullFlag=false,aboutFlag=false,aboutFillFlag=false,highScoreFlag=false;
 GLuint tex_2d,tex1_2d,tex2_2d[30];
 static GLfloat currentAngleOfRotation = 0.0;
 static int FPS = 120;
-GLfloat rotation = 90.0;int counter=0;int width, height;
-float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuChickPos;int eggBreaks=0,value=2;
+GLfloat rotation = 90.0;
+char scankey;
+int counter=0,width, height,eggBreaks=0,value=2,chickenheadCount=0,chickNum=20,scankeyCount=0;
+float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuChickPos,instrSize=0.0;
 
+set<pair <string,int> > highScoreList;
 void drawObject(int num,float x,float y,float xsize,float ysize)
 {
     //Clears the window with current clearing color
@@ -49,6 +53,8 @@ void drawObject(int num,float x,float y,float xsize,float ysize)
     glDisable(GL_TEXTURE_2D);
 
 }
+
+
 
 class FallingEgg{
 public:
@@ -113,26 +119,12 @@ void drawEgg(float radiusX,float radiusY,GLfloat *color){
 
    int i;
    drawObject(9,x,y,radiusX*this->eggSize,radiusY*this->eggSize);
-   /* glColor3fv(color);
-   glBegin(GL_POLYGON);
 
-   for(i=0;i<360;i++)
-   {
-      float rad = i*DEG2RAD;
-      glVertex2f(cos(rad)*radiusX*this->eggSize+x,
-                  sin(rad)*radiusY*this->eggSize+y);
-   }
-
-   glEnd();*/
 
 }
 void drawYolk(){
     float sizeOuter=35,sizeInner=23;
     drawObject(10,x,y,sizeOuter,sizeInner);
-    /*GLfloat outer[3]={1.0,1.0,1.0};
-    this->drawEgg(0.35*sizeOuter/eggSize,0.25*sizeOuter/eggSize,outer);
-    GLfloat inner[3]={1.0,0.78823529,0.01568627};
-    this->drawEgg(0.35*sizeInner/eggSize,0.25*sizeInner/eggSize,inner);*/
 
     }
 
@@ -150,38 +142,19 @@ void mouse(int button, int state, int x, int y) {
     menuFlag=false;gameFlag=true;counter=0;
   }
 }
-/*
-if(spinning){
-    glColor3f(1.0, 0.0, 0.0);
-    //output(600,700,"Catch Me If You Can",2);
-    glPushMatrix();
-    glTranslatef(0,textPos3,0);
-    drawObject("resources/Title.png",400,1000,610,34);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(textPos1,0,0);
-    drawObject("resources/NewGame.png",-400,500,347,82);
-    drawObject("resources/HighScore.png",-400,300,347,82);
-    glPopMatrix();
-    glPushMatrix();
-    glTranslatef(textPos2,0,0);
-    drawObject("resources/Instructions.png",1500,400,347,82);
-    drawObject("resources/Exit.png",1500,200,347,82);
-    glPopMatrix();
-    textMotion();
-    //output(600,600,"1. New Game",1);
-    //output(600,500,"2. Instructions",1);
-    //output(600,400,"3. High Score",1);
-    //output(600,300,"4. Exit",1);
-    }
-*/
+
 
 void load_textures(){int i;
-char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title.png","resources/NewGame.png","resources/HighScore.png"
-,"resources/Instructions.png","resources/Exit.png","resources/Basket.png","resources/abstract_bird.png",
-"resources/white-egg-md.png","resources/Yolk.png","resources/ground.png","resources/wrong.png","resources/wrong1.png"
-,"resources/fence.png","resources/GameOver.png","resources/Levelup.png"};
-for(i=0;i<19;i++)
+char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title.png"
+,"resources/NewGame.png","resources/HighScore.png","resources/Instructions.png"
+,"resources/Exit.png","resources/Basket.png","resources/abstract_bird.png"
+,"resources/white-egg-md.png","resources/Yolk.png","resources/ground.png"
+,"resources/wrong.png","resources/wrong1.png","resources/fence.png"
+,"resources/GameOver.png","resources/Levelup.png","resources/About.png"
+,"resources/Instructionspage.png","resources/Aboutbutton.png","resources/chicken/chicken-1.png"
+,"resources/chicken/chicken-2.png","resources/chicken/chicken-3.png","resources/chicken/chicken-4.png"
+,"resources/highScorePage.png"};
+for(i=0;i<25;i++)
 tex2_2d[i] = SOIL_load_OGL_texture
     (
         path[i],
@@ -219,6 +192,8 @@ void init(){
     gluOrtho2D(0, 1366, 0, 768);
 
 }
+
+
 void output(float x, float y, const char *string,int choice)
 {
       int len, i;
@@ -237,192 +212,15 @@ void output(float x, float y, const char *string,int choice)
 
 			}
 }
-/*  *Objects
-1.Chicken
-*/
-void drawChicken(float k1, float k2,float k)
-{
 
-//body sk
-
-glBegin(GL_POLYGON);
-glColor3f(1.0,1.0,1.0);
-glVertex2f(20*k+k1,86*k+k2);
-glVertex2f(31*k+k1,95*k+k2);
-glVertex2f(40*k+k1,75*k+k2);
-glVertex2f(60*k+k1,75*k+k2);
-glVertex2f(100*k+k1,95*k+k2);
-glVertex2f(90*k+k1,70*k+k2);
-glVertex2f(118*k+k1,63*k+k2);
-glVertex2f(65*k+k1,40*k+k2);
-glVertex2f(20*k+k1,40*k+k2);
-glEnd();
-
-//leg1
-
-glBegin(GL_POLYGON);
-glColor3f(0.8235,0.41176,0.117);
-glVertex2f(50*k+k1,40*k+k2);
-glVertex2f(53*k+k1,40*k+k2);
-glVertex2f(53*k+k1,0*k+k2);
-glVertex2f(49*k+k1,0*k+k2);
-glVertex2f(53*k+k1,5*k+k2);
-glVertex2f(50*k+k1,40*k+k2);
-glEnd();
-
-//leg2
-
-glBegin(GL_POLYGON);
-glColor3f(0.8235,0.41176,0.117);
-glVertex2f(40*k+k1,40*k+k2);
-glVertex2f(50*k+k1,40*k+k2);
-glVertex2f(48*k+k1,33*k+k2);
-glVertex2f(46*k+k1,0*k+k2);
-glVertex2f(40*k+k1,0*k+k2);
-glEnd();
-
-//rk thale
-
-glBegin(GL_POLYGON);
-glColor3f(1.0,0.0,0.0);
-glVertex2f(15*k+k1,105*k+k2);
-glVertex2f(30*k+k1,105*k+k2);
-glVertex2f(31*k+k1,95*k+k2);
-glVertex2f(20*k+k1,86*k+k2);
-glVertex2f(15*k+k1,86*k+k2);
-glEnd();
-
-//rk kokku
-glBegin(GL_POLYGON);
-glColor3f(1,1,.4);
-glVertex2f(15*k+k1,97*k+k2);
-glVertex2f(0*k+k1,95*k+k2);
-glVertex2f(0*k+k1,92*k+k2);
-glVertex2f(15*k+k1,90*k+k2);
-glEnd();
-
-//kannu
-
-glBegin(GL_POLYGON);
-glColor3f(0.0,0.0,0.0);
-glVertex2f(20*k+k1,100*k+k2);
-glVertex2f(23*k+k1,100*k+k2);
-glVertex2f(23*k+k1,95*k+k2);
-glVertex2f(20*k+k1,95*k+k2);
-glEnd();
-
-//juttu :P
-
-glBegin(GL_POLYGON);
-glColor3f(1.0,0.0,0.0);
-glVertex2f(20*k+k1,105*k+k2);
-glVertex2f(15*k+k1,115*k+k2);
-glVertex2f(22*k+k1,112*k+k2);
-glVertex2f(24*k+k1,118*k+k2);
-glVertex2f(26*k+k1,112*k+k2);
-glVertex2f(31*k+k1,118*k+k2);
-glVertex2f(25*k+k1,105*k+k2);
-glEnd();
-glFlush();
-}
-
-//Egg
 void missMark(float x,float y,GLfloat* color){
-/*glColor3fv(color);
-glBegin(GL_POLYGON);
-glVertex2d(0+x,50+y);
-glVertex2d(20+x,50+y);
-glVertex2d(60+x,0+y);
-glVertex2d(40+x,0+y);
-glEnd();
-glBegin(GL_POLYGON);
-glVertex2d(0+x,0+y);
-glVertex2d(40+x,50+y);
-glVertex2d(60+x,50+y);
-glVertex2d(20+x,0+y);
-glEnd();*/
+
 if(color[0]==1.0)
 drawObject(12,x,y,60,50);
 else
 drawObject(13,x,y,60,50);
 }
 
-//Function for drawing Basket
-void drawBasket(float x,float y,float size1){
-glColor3f(0.64705882352,0.16470588235,0.16470588235);
-glBegin(GL_POLYGON);
-glVertex2d(x,y);
-glVertex2d(x,y+0.08*size1);
-glVertex2d(x+0.22*size1,y+0.08*size1);
-glVertex2d(x+0.22*size1,y);
-glEnd();
-glBegin(GL_POLYGON);
-glVertex2d(x,y+0.08*size1);
-glVertex2d(x,y+0.12*size1);
-glVertex2d(x+0.03*size1,y+0.12*size1);
-glVertex2d(x+0.03*size1,y+0.08*size1);
-glEnd();
-glBegin(GL_POLYGON);
-glVertex2d(x+0.19*size1,y+0.08*size1);
-glVertex2d(x+0.19*size1,y+0.12*size1);
-glVertex2d(x+0.22*size1,y+0.12*size1);
-glVertex2d(x+0.22*size1,y+0.08*size1);
-glEnd();
-}
-
-void menuChicken(float x,float y,float size4){
-glColor3f(1.0,1.0,1.0);
-glBegin(GL_POLYGON);
-glVertex2d(0+x,0+y);
-glVertex2d(0+x,50*size4+y);
-glVertex2d(50*size4+x,50*size4+y);
-glVertex2d(50*size4+x,0+y);
-glEnd();
-glColor3f(0.0,0.0,0.0);
-glBegin(GL_LINE_LOOP);
-glVertex2d(0+x,0+y);
-glVertex2d(0+x,50*size4+y);
-glVertex2d(50*size4+x,50*size4+y);
-glVertex2d(50*size4+x,0+y);
-glEnd();
-glColor3f(1.0,1.0,1.0);
-glBegin(GL_POLYGON);
-glVertex2d(12.5*size4+x,40*size4+y);
-glVertex2d(12.5*size4+x,65*size4+y);
-glVertex2d(37.5*size4+x,65*size4+y);
-glVertex2d(37.5*size4+x,40*size4+y);
-glEnd();
-glColor3f(0.0,0.0,0.0);
-glBegin(GL_LINE_LOOP);
-glVertex2d(12.5*size4+x,40*size4+y);
-glVertex2d(12.5*size4+x,65*size4+y);
-glVertex2d(37.5*size4+x,65*size4+y);
-glVertex2d(37.5*size4+x,40*size4+y);
-glEnd();
-glPointSize(5);
-glBegin(GL_POINTS);
-glVertex2d(18.75*size4+x,57*size4+y);
-glVertex2d(31.25*size4+x,57*size4+y);
-glEnd();
-glColor3f(1.0,0.0,0.0);
-glBegin(GL_TRIANGLES);
-glVertex2d(20.75*size4+x,45*size4+y);
-glVertex2d(25*size4+x,42*size4+y);
-glVertex2d(29.25*size4+x,45*size4+y);
-glEnd();
-
-glBegin(GL_TRIANGLES);
-glVertex2d(20*size4+x,65*size4+y);
-glVertex2d(15*size4+x,75*size4+y);
-glVertex2d(24*size4+x,65*size4+y);
-glEnd();
-glBegin(GL_TRIANGLES);
-glVertex2d(24*size4+x,65*size4+y);
-glVertex2d(33*size4+x,75*size4+y);
-glVertex2d(28*size4+x,65*size4+y);
-glEnd();
-
-}
 
 void reshape(int width, int height){
     /* window ro reshape when made it bigger or smaller*/
@@ -499,11 +297,12 @@ void rect(){
     glTranslatef(textPos1,0,0);
     drawObject(3,-400,500,347,82);
     drawObject(4,-400,300,347,82);
+    drawObject(6,-400,100,347,82);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(textPos2,0,0);
     drawObject(5,1500,400,347,82);
-    drawObject(6,1500,200,347,82);
+    drawObject(19,1500,200,347,82);
     glPopMatrix();
     textMotion();
     //output(600,600,"1. New Game",1);
@@ -545,15 +344,35 @@ void eggDrawHandler(){
 
     } }
 }
+
+
+
 void chickenDrawHandler(){
+        chickenheadCount++;
+        if(chickenheadCount>180&&chickenheadCount<241);
+        else if(chickenheadCount>=241)
+        chickenheadCount=0;
+        else if(chickenheadCount==15||chickenheadCount==105)
+        chickNum=20;
+        else if(chickenheadCount==30||chickenheadCount==90||chickenheadCount==120||chickenheadCount==180)
+        chickNum=21;
+        else if(chickenheadCount==45||chickenheadCount==75||chickenheadCount==135||chickenheadCount==165)
+        chickNum=22;
+        else if(chickenheadCount==60||chickenheadCount==150)
+        chickNum=23;
         glPushMatrix();
         //Chicken draw Call
         glTranslatef(chickenPos,0,0);
         //drawChicken(0,620,sizeChicken);
-        drawObject(8,0,620,150*sizeChicken,120*sizeChicken);
+        if(diffNeg)
+            drawObject(chickNum,0,620,150*sizeChicken,120*sizeChicken);
+        else
+            drawObject(chickNum,150*sizeChicken,620,-150*sizeChicken,120*sizeChicken);
         glPopMatrix();
 
 }
+
+
 float sizeBasket=250;
 int level=0;
 char tempScore[30],tempScore1[30];
@@ -578,7 +397,7 @@ if(scoreInt==200&&level==0)
 //if(scoreInt==280&&level==1)
     //levelUp();
 
-if(scoreInt>highScoreInt){highScoreInt=scoreInt;}
+if(scoreInt>highScoreInt){highScoreInt=scoreInt;highScoreFlag=true;}
 strcpy(tempScore,score);sprintf(scoreChar,"%d",scoreInt);
 strcpy(tempScore1,highScore);sprintf(highScoreChar,"%d",highScoreInt);
 strcat(tempScore,scoreChar);
@@ -586,15 +405,8 @@ strcat(tempScore1,highScoreChar);
 //if(scoreInt==200)
     //levelUp();
 }
-void drawRectangle(float x1,float y1,float b,float l){
-glColor3f(0.0,0.5,0.0);
-glBegin(GL_POLYGON);
-glVertex2d(x1,y1);
-glVertex2d(x1,y1+l);
-glVertex2d(x1+b,y1+l);
-glVertex2d(x1+b,y1);
-glEnd();
-}
+
+
 int overCounter=0,t=0;float movevariable=0,diff2=-1000/SINSUM,posScreen=1500;
 void gameOverScreen(){
 overCounter++;
@@ -610,8 +422,8 @@ if(overCounter>=240)
 for(t=0;t<8;t++)
     egg[t].attClear();
 overCounter=0;
-if(scoreInt>highScoreInt)
-    highScoreInt=scoreInt;scoreInt=0;
+scoreInt=0;
+
     scoreUp();eggBreaks=0;textPos1=0;textPos2=0;textPos3=0;textmotionCount=0;counter=0;FPS=120;value=2;posScreen=1500;movevariable=0;leveldispPos=1500;leveldisp=-1;
 }
 }
@@ -666,6 +478,8 @@ void gameScreen(){
 
     glFlush();
 }
+
+
 float menuChickmove=0;
 void menuChickMove(){
     if(menuChickmove>=181)
@@ -675,22 +489,76 @@ void menuChickMove(){
     menuChickmove+=2;
 }
 
+
+void aboutMenu(){
+if(aboutFlag){
+    if(!aboutFillFlag&&instrSize<=0.6)
+        instrSize+=0.004166667;
+    if(aboutFillFlag&&instrSize>=0)
+        instrSize-=0.004166667;
+    if(instrSize<0.001){instrSize=0;
+        aboutFlag=false;}
+    glPushMatrix();
+    drawObject(17,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
+    glPopMatrix();
+    }
+    }
+
+
+void instructionMenu(){
+
+    if(instrFlag){
+    if(!instrFullFlag&&instrSize<=0.6)
+        instrSize+=0.004166667;
+    if(instrFullFlag&&instrSize>=0)
+        instrSize-=0.004166667;
+    if(instrSize<0.001){instrSize=0;
+        instrFlag=false;}
+    glPushMatrix();
+    drawObject(18,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
+    glPopMatrix();
+    }}
+    string name;
+void highScoreMenu(){
+drawObject(24,171,96,1024,576);
+if(scankey==8&&scankeyCount==0)
+{name.erase(name.size()-1);}
+else if(scankey!=0&&scankeyCount==0)
+name.append(&scankey);
+output(500,450,name.c_str(),2);
+if(scankey==13){
+highScoreFlag=false;
+pair<string,int> highScorePair(name,highScoreInt);
+highScoreList.insert(highScorePair);
+cout<<highScorePair.first<<endl<<highScorePair.second<<endl;
+}
+char score[30];
+sprintf(score,"%d",highScoreInt);
+output(600,400,score,2);
+
+scankeyCount++;
+}
+
 void menuScreen(){
     glPushMatrix();
     RenderScene(0,0,0,1366,768);
     rect();
     glPopMatrix();
-
     glPushMatrix();
     glTranslatef(0,menuChickPos,0);
     drawObject(9,300,650,300*0.3,258*0.3);
     //menuChicken(300,650,1.0);
     glPopMatrix();
     menuChickMove();
+    instructionMenu();
+    aboutMenu();
+    if(highScoreFlag)
+        highScoreMenu();
     glutSwapBuffers();
     glFlush();
 
 }
+
 
 void display(){
     //Clear Window
@@ -735,6 +603,8 @@ void keyboardown(int key, int x, int y)
 
     glutPostRedisplay();
 }
+
+
 void keyboardup(int key, int x, int y)
 {
     switch (key){
@@ -751,6 +621,7 @@ void keyboardup(int key, int x, int y)
 
     glutPostRedisplay();
 }
+
 
 void blank()
 {
@@ -817,11 +688,15 @@ for(j=0;j<8;j++){
 
 }
 
+
+
 unsigned long long rdtsc(){
     unsigned int lo,hi;
     __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
     return ((unsigned long long)hi << 32) | lo;
 }
+
+
 
 void chickenHandler(){
 if(i==1920/speed)
@@ -831,6 +706,7 @@ if(i==240/speed||i==0/speed||i==480/speed||i==720/speed||i==960/speed||i==1200/s
   moveChickenFlag=false;
         diff=xegg[(int)(i*speed/240)]-chickenPos-50;
         printf("%d %f %f %f %f\n",i,xegg[(int)(i/240*speed)],diff,egg[0].x,chickenPos);
+        if(diff<0)diffNeg=true;else diffNeg=false;
         chickenMotionVariable=1;
         diff1=diff/SINSUM;temp=sizeChicken;
   }
@@ -848,6 +724,8 @@ if(i==240/speed||i==0/speed||i==480/speed||i==720/speed||i==960/speed||i==1200/s
 
 
 }
+
+
 
 void collisionDetection(){
     for(j=0;j<8;j++){
@@ -867,6 +745,9 @@ void collisionDetection(){
     }
 
 }
+
+
+
 int k;int p=0;
 void timer(int v) {
   if (spinning) {
@@ -898,18 +779,26 @@ for(k=0;k<8;k++){
     collisionDetection();
 
 }
-
+if(menuFlag);
 
   glutPostRedisplay();
   glutTimerFunc(1000/FPS, timer, v);
 }
+
 
 //Keyboard
 void keyPress(unsigned char key,int x,int y){
 switch(key){
     case 49:menuFlag=false;gameFlag=true;counter=0;
      break;
-     case '4':exit(0);
+     case '2':if(!instrFlag){instrFlag=true;instrFullFlag=false;}break;
+     case 27:if(instrFlag)instrFullFlag=true;if(aboutFlag)aboutFillFlag=true;break;
+     case '4':if(!aboutFlag){aboutFlag=true;aboutFillFlag=false;}break;
+     case '5':exit(0);
+}
+if(highScoreFlag){
+    if((key>64&&key<91)||(key>96&&key<128)||key==8||key==13)
+        {scankey=key;scankeyCount=0;}
 }
 }
 
