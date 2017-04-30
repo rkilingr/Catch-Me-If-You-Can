@@ -19,9 +19,10 @@ static int FPS = 120;
 GLfloat rotation = 90.0;
 char scankey;
 int counter=0,width, height,eggBreaks=0,value=2,chickenheadCount=0,chickNum=20,scankeyCount=0;
-float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuChickPos,instrSize=0.0;
-
+float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuEggPos,instrSize=0.0;
 set<pair <string,int> > highScoreList;
+
+//Function for drawing the texture object provided the parameters x y coordinates and the sizes
 void drawObject(int num,float x,float y,float xsize,float ysize)
 {
     //Clears the window with current clearing color
@@ -55,7 +56,7 @@ void drawObject(int num,float x,float y,float xsize,float ysize)
 }
 
 
-
+//Class for the egg which handles its parameters and draw
 class FallingEgg{
 public:
 float x,y,eggSize,posYEgg=0,eggVelocity=0,posnBasket=0;
@@ -72,21 +73,25 @@ FallingEgg(){;}
     eggBreaks++;
     yolkFlag=true;
     }
+
     void attClear(){
     x=y=eggSize=eggVelocity=0;
     posYEgg=0;
     status=yolkFlag=collisionFlag=false;
     }
+
  void setVar(float x,float y,float eggSize){
     this->x=x;
     this->y=y;
     this->eggSize=eggSize;
 
 }
+
 void setCollisionFlag(){
 
     collisionFlag=true;
 }
+
 void draw(){
     GLfloat eggColor[3]={1.0,1.0,1.0};
     if(!collisionFlag)
@@ -143,8 +148,9 @@ void mouse(int button, int state, int x, int y) {
   }
 }
 
-
+//For loading the textures when you load the program
 void load_textures(){int i;
+  //Array containing location of all required texture files
 char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title.png"
 ,"resources/NewGame.png","resources/HighScore.png","resources/Instructions.png"
 ,"resources/Exit.png","resources/Basket.png","resources/abstract_bird.png"
@@ -154,6 +160,7 @@ char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title
 ,"resources/Instructionspage.png","resources/Aboutbutton.png","resources/chicken/chicken-1.png"
 ,"resources/chicken/chicken-2.png","resources/chicken/chicken-3.png","resources/chicken/chicken-4.png"
 ,"resources/highScorePage.png"};
+//Loop to load each texture into the the array tex2_2d
 for(i=0;i<25;i++)
 tex2_2d[i] = SOIL_load_OGL_texture
     (
@@ -177,6 +184,7 @@ tex2_2d[i] = SOIL_load_OGL_texture
 
 }
 
+//Initialization
 void init(){
     // set clear color to black
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -193,7 +201,7 @@ void init(){
 
 }
 
-
+//For displaying the Bitmap or Stroke text
 void output(float x, float y, const char *string,int choice)
 {
       int len, i;
@@ -213,6 +221,7 @@ void output(float x, float y, const char *string,int choice)
 			}
 }
 
+//For drawing the cross symbol when egg breaks
 void missMark(float x,float y,GLfloat* color){
 
 if(color[0]==1.0)
@@ -221,7 +230,7 @@ else
 drawObject(13,x,y,60,50);
 }
 
-
+//Reshape Function
 void reshape(int width, int height){
     /* window ro reshape when made it bigger or smaller*/
     glViewport(0, 0, width, height);
@@ -238,43 +247,12 @@ void reshape(int width, int height){
     glMatrixMode(GL_MODELVIEW);
     glutPostRedisplay();
 }
-void RenderScene(int num,float x,float y,float xsize,float ysize)
-{
-    //Clears the window with current clearing color
-
-       //Sets current drawing color
-       //NOTE: Values are in float format, so 1.0f is full intensity
-    glColor3f(0.0f, 0.0f, 0.0f);
-
-    //Draws a square/rectangle with above drawing color
-    glRectf(x, y,x+xsize, y+ysize);
-
-    glEnable(GL_TEXTURE_2D);
-
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
 
-    glBindTexture(GL_TEXTURE_2D, tex2_2d[num]);
-
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-
-    glBegin(GL_POLYGON);
-        glTexCoord2f(0.0, 0.0); glVertex2f(x, y);
-        glTexCoord2f(1.0, 0.0); glVertex2f(x, y+ysize);
-        glTexCoord2f(1.0, 1.0); glVertex2f(x+xsize, y+ysize);
-        glTexCoord2f(0.0, 1.0); glVertex2f(x+xsize, 0);
-    glEnd();
-
-    //Swaps the onscreen and offscreen buffers and flushes them
-    //glutSwapBuffers();
-    glDisable(GL_TEXTURE_2D);
-
-}
-
-//Menu
+//Menu parameters for the motion of menu buttons
 float textPos1=0,textPos2=0,textPos3=0;int textmotionCount=0;
 void textMotion(){
+  //Interpolation function for sinusoidal motion
 float diff1=900/SINSUM;
 float diff2=-1000/SINSUM;
 float diff3=-350/SINSUM;
@@ -284,10 +262,10 @@ textPos2+=diff2*sin(textmotionCount*DEG2RAD);
 textPos3+=diff3*sin(textmotionCount*DEG2RAD);
 textmotionCount+=1;}
 }
+//Draw menu buttons
 void rect(){
     if(spinning){
     glColor3f(1.0, 0.0, 0.0);
-    //output(600,700,"Catch Me If You Can",2);
 
     glPushMatrix();
     glTranslatef(0,textPos3,0);
@@ -314,22 +292,9 @@ void rect(){
 }
 
 
-void clearscreen(){
-glClear(GL_COLOR_BUFFER_BIT);glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glPushMatrix();
-
-
-    glPopMatrix();
-    glutSwapBuffers();
-    glFlush();
-    }
-
-    //Function for displaying Game screen
+    //Parameters for drawing the egg
     float size2=25,sizeChicken=0.65,xegg[8];FallingEgg egg[8];
-
+//Function to draw the egg
 void eggDrawHandler(){
 
     int i;
@@ -346,7 +311,7 @@ void eggDrawHandler(){
 }
 
 
-
+//Function to draw the chicken
 void chickenDrawHandler(){
         chickenheadCount++;
         if(chickenheadCount>180&&chickenheadCount<241);
@@ -372,18 +337,21 @@ void chickenDrawHandler(){
 
 }
 
-
+//Parameters to handle level up and score
 float sizeBasket=250;
 int level=0;
 char tempScore[30],tempScore1[30];
 int scoreInt=0,highScoreInt=0;int leveldisp=-1;
+//Level up funcction to do tasks required for level up
 void levelUp(){
     FPS+=40;
     value-=0.000000001;
     level++;
     eggBreaks=0;leveldisp=0;
 }
+//Parameters for movement of levelup screen
 float leveldispPos=1500,difflevel=-1000/SINSUM;
+//Score increment function
 void scoreUp(){
 char score[30]="Score:",highScore[30]="HighScore:";
 char scoreChar[10],highScoreChar[10];
@@ -408,6 +376,7 @@ strcat(tempScore1,highScoreChar);
 
 
 int overCounter=0,t=0;float movevariable=0,diff2=-1000/SINSUM,posScreen=1500;
+//Tasks to do when the game is over
 void gameOverScreen(){
 overCounter++;
 drawObject(15,posScreen,768/2.0-45,606*0.5,336*0.5);
@@ -427,26 +396,32 @@ scoreInt=0;
     scoreUp();eggBreaks=0;textPos1=0;textPos2=0;textPos3=0;textmotionCount=0;counter=0;FPS=120;value=2;posScreen=1500;movevariable=0;leveldispPos=1500;leveldisp=-1;
 }
 }
-
+//Things to draw during the game
 void gameScreen(){
-    glPushMatrix();drawObject(1,0,68,1366,700);glPopMatrix();
+    glPushMatrix();
+    //Draw background image
+    drawObject(1,0,68,1366,700);
+    glPopMatrix();
+    //Draw the ground in which basket rests
     drawObject(11,-1000,0,4000,68);
+    //Draw the ground in which chicken rests
     drawObject(11,-1000,567,4000,68);
+    //Level up notification and its movement
     if(leveldisp>=0&&leveldispPos>=-100){
     drawObject(16,leveldispPos,768/2.0-45,356*0.5,95*0.5);
     leveldispPos+=difflevel*sin((leveldisp++)*DEG2RAD);
     }
     if(leveldisp>=181)leveldisp=-1;
+    //Draw egg
     eggDrawHandler();
+    //Draw chicken
     chickenDrawHandler();
-   // drawObject(14,0,620,1366,100);
     glPushMatrix();
     glTranslatef(posX,posY,posZ);
-    //Bakset draw call
-    //drawBasket(0,50,sizeBasket);
+    //Draw the basket
     drawObject(7,0,50,0.22*sizeBasket,0.32*sizeBasket);
     glPopMatrix();
-
+    //For displaying the score
     output(1100,740,tempScore,1);
     output(1100,640,tempScore1,1);
     output(100,740,"Level:1",1);
@@ -479,17 +454,17 @@ void gameScreen(){
     glFlush();
 }
 
-
-float menuChickmove=0;
-void menuChickMove(){
-    if(menuChickmove>=181)
-    menuChickmove=0;
-    if(menuChickmove<181)
-        menuChickPos=sin(menuChickmove*DEG2RAD)*20;
-    menuChickmove+=2;
+//For the up and down movement of the egg in menu
+float menuEggmove=0;
+void menuEggMove(){
+    if(menuEggmove>=181)
+    menuEggmove=0;
+    if(menuEggmove<181)
+        menuEggPos=sin(menuEggmove*DEG2RAD)*20;
+    menuEggmove+=2;
 }
 
-
+//For displaying the about menu
 void aboutMenu(){
 if(aboutFlag){
     if(!aboutFillFlag&&instrSize<=0.6)
@@ -504,7 +479,7 @@ if(aboutFlag){
     }
     }
 
-
+//For displaying the instruction menu
 void instructionMenu(){
 
     if(instrFlag){
@@ -519,6 +494,8 @@ void instructionMenu(){
     glPopMatrix();
     }}
     string name;
+
+    //For displaying and taking and showing the input from highscore menu
 void highScoreMenu(){
 drawObject(24,171,96,1024,576);
 if(scankey==8&&scankeyCount==0)
@@ -527,10 +504,15 @@ else if(scankey!=0&&scankeyCount==0)
 name.append(&scankey);
 output(500,450,name.c_str(),2);
 if(scankey==13){
-highScoreFlag=false;
-pair<string,int> highScorePair(name,highScoreInt);
-highScoreList.insert(highScorePair);
-cout<<highScorePair.first<<endl<<highScorePair.second<<endl;
+  highScoreFlag=false;
+  pair<string,int> highScorePair(name,highScoreInt);
+  highScoreList.insert(highScorePair);
+  set< pair<string,int>>::iterator iter;
+  for(iter=highScoreList.begin();iter!=highScoreList.end();iter++){
+  cout<<(*iter).first<<"\t"<<(*iter).second<<endl;
+  name.erase();
+  scankey=-100;
+}
 }
 char score[30];
 sprintf(score,"%d",highScoreInt);
@@ -538,18 +520,20 @@ output(600,400,score,2);
 
 scankeyCount++;
 }
-
+//For displaying the menu screen
 void menuScreen(){
     glPushMatrix();
-    RenderScene(0,0,0,1366,768);
+    //For drawing menu background
+    drawObject(0,0,0,1366,768);
     rect();
     glPopMatrix();
     glPushMatrix();
-    glTranslatef(0,menuChickPos,0);
+    glTranslatef(0,menuEggPos,0);
+    //For drawing the menu egg
     drawObject(9,300,650,300*0.3,258*0.3);
     //menuChicken(300,650,1.0);
     glPopMatrix();
-    menuChickMove();
+    menuEggMove();
     instructionMenu();
     aboutMenu();
     if(highScoreFlag)
@@ -559,7 +543,7 @@ void menuScreen(){
 
 }
 
-
+//Display Function
 void display(){
     //Clear Window
     //If in menu mode Display Menu
@@ -578,7 +562,7 @@ void display(){
     }
 
     else
-    {clearscreen();
+    {
     }
 
 }
@@ -586,7 +570,7 @@ void display(){
 
 float move_unit = 8;
 
-//Keyboard Movement Controls
+//Keyboard Movement Controls when button is pressed
 void keyboardown(int key, int x, int y)
 {
     switch (key){
@@ -604,7 +588,7 @@ void keyboardown(int key, int x, int y)
     glutPostRedisplay();
 }
 
-
+//Keyboard Movement Controls when button is released
 void keyboardup(int key, int x, int y)
 {
     switch (key){
@@ -623,17 +607,10 @@ void keyboardup(int key, int x, int y)
 }
 
 
-void blank()
-{
- glClear(GL_COLOR_BUFFER_BIT);
-  glClearColor(0.0, 0.0, 0.0, 0.0);
-
-}
-
-//TImer function for realtime movement
+//Parameters for basket movement
 float x=0.015,y[4],basketAcceleration=0.02,basketVelocity=0;int i=-1,j=0;
 bool flag=true;
-
+//Basket movement handler
 void basketHandler(){
 //Handles the motion of the basket for catching
 if(leftButtonFlag&&(posX>100)){
@@ -664,9 +641,10 @@ if(leftButtonFlag&&(posX>100)){
 
 }
 
-
+//More Parameters
 float chickenMotionVariable=0,diff=0,diff1=0;
 float temp,theta=0;
+//Egg motion handler
 void eggHandler(){
 //Handles the motion of the Egg
 
@@ -697,7 +675,7 @@ unsigned long long rdtsc(){
 }
 
 
-
+//Chicken motion handler(selects its random position and moves it in a smooth sinusoidal curve velocity)
 void chickenHandler(){
 if(i==1920/speed)
     i=0;
@@ -726,17 +704,20 @@ if(i==240/speed||i==0/speed||i==480/speed||i==720/speed||i==960/speed||i==1200/s
 }
 
 
-
+//Collision detection
 void collisionDetection(){
     for(j=0;j<8;j++){
         if(!egg[j].collisionFlag)
+        //Check for collision on x axis
             if(egg[j].x-0.27+0.54*size2>=posX&&posX+0.22*sizeBasket>=egg[j].x-0.27){
+              //Check for collision on y axis
                 if(egg[j].y+0.7*size2+egg[j].getYPos()+0.7*size2>=50&&50+0.22*sizeBasket>=egg[j].y+egg[j].getYPos()+0.7*size2)
-                    {
+                    {//If the egg is not yolk yet then it has collided with the basket
                     if(!egg[j].yolkFlag)
                         {
                         egg[j].setCollisionFlag();
                         scoreUp();
+                        //Sets eggs position in the basket
                         egg[j].posnBasket=egg[j].x-0.27-posX;
                         }
                     }
@@ -747,8 +728,9 @@ void collisionDetection(){
 }
 
 
-
+//Timer parameters
 int k;int p=0;
+//Timer Function
 void timer(int v) {
   if (spinning) {
     currentAngleOfRotation += 0.50;
@@ -779,14 +761,13 @@ for(k=0;k<8;k++){
     collisionDetection();
 
 }
-if(menuFlag);
 
   glutPostRedisplay();
   glutTimerFunc(1000/FPS, timer, v);
 }
 
 
-//Keyboard
+//Keyboard function for taking input of characters from A-Z&a-z
 void keyPress(unsigned char key,int x,int y){
 switch(key){
     case 49:menuFlag=false;gameFlag=true;counter=0;
@@ -814,6 +795,7 @@ int main(int argc, char** argv){
     glutInitWindowPosition(0, 0);
     glutCreateWindow("Practice 1");
     glutDisplayFunc(display);
+    //Load the textures
     load_textures();
     init();//glutReshapeFunc(reshape);
     glutTimerFunc(100, timer, 0);
