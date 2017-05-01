@@ -12,16 +12,16 @@
 #define DEG2RAD 0.01745329251
 #define SINSUM 114.5886501
 using namespace std;
-static bool spinning = true,menuFlag=true,gameFlag=false,yolkFlag=false,leftButtonFlag=false,rightButtonFlag=false,diffNeg=false,moveChickenFlag=false,instrFlag=false,instrFullFlag=false,aboutFlag=false,aboutFillFlag=false,highScoreFlag=false;
+static bool spinning = true,menuFlag=true,gameFlag=false,yolkFlag=false,leftButtonFlag=false,rightButtonFlag=false,diffNeg=false,moveChickenFlag=false,instrFlag=false,instrFullFlag=false,aboutFlag=false,aboutFillFlag=false,highScoreFlag=false,highScoreWindowFlag=false,highScoreWindowFillFlag=false;
 GLuint tex_2d,tex1_2d,tex2_2d[30];
 static GLfloat currentAngleOfRotation = 0.0;
 static int FPS = 120;
 GLfloat rotation = 90.0;
 char scankey;
-int counter=0,width, height,eggBreaks=0,value=2,chickenheadCount=0,chickNum=20,scankeyCount=0;
+int counter=0,width, height,eggBreaks=0,value=2,chickenheadCount=0,chickNum=20,scankeyCount=0,highScoreInt=0;
 float posX = 0, posY = 0, posZ = 0,chickenPos=0,speed=1,menuEggPos,instrSize=0.0;
-set<pair <string,int> > highScoreList;
-
+set<pair <int,string> > highScoreList;
+FILE* highScoreFile;
 //Function for drawing the texture object provided the parameters x y coordinates and the sizes
 void drawObject(int num,float x,float y,float xsize,float ysize)
 {
@@ -55,7 +55,19 @@ void drawObject(int num,float x,float y,float xsize,float ysize)
 
 }
 
-
+void load_highscore(){
+  string temp1;char temp1c[30];int temp2;pair <int,string> highPair;
+  highScoreFile=fopen(".highscore","a+");
+  while(fscanf(highScoreFile,"%s %d",temp1c,&temp2)!=EOF){
+    temp1=temp1c;
+    highPair.first=temp2;
+    highPair.second=temp1;
+    highScoreList.insert(highPair);
+  }
+  fclose(highScoreFile);
+  highScoreFile=fopen(".highscore","a");
+  highScoreInt=(*highScoreList.begin()).first;
+}
 //Class for the egg which handles its parameters and draw
 class FallingEgg{
 public:
@@ -159,9 +171,9 @@ char path[100][50]={"resources/WUUJj.png","resources/cloud.png","resources/Title
 ,"resources/GameOver.png","resources/Levelup.png","resources/About.png"
 ,"resources/Instructionspage.png","resources/Aboutbutton.png","resources/chicken/chicken-1.png"
 ,"resources/chicken/chicken-2.png","resources/chicken/chicken-3.png","resources/chicken/chicken-4.png"
-,"resources/highScorePage.png"};
+,"resources/highScorePage.png","resources/highScoreWindow.png"};
 //Loop to load each texture into the the array tex2_2d
-for(i=0;i<25;i++)
+for(i=0;i<30;i++)
 tex2_2d[i] = SOIL_load_OGL_texture
     (
         path[i],
@@ -341,7 +353,7 @@ void chickenDrawHandler(){
 float sizeBasket=250;
 int level=0;
 char tempScore[30],tempScore1[30];
-int scoreInt=0,highScoreInt=0;int leveldisp=-1;
+int scoreInt=0;int leveldisp=-1;
 //Level up funcction to do tasks required for level up
 void levelUp(){
     FPS+=40;
@@ -493,8 +505,33 @@ void instructionMenu(){
     drawObject(18,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
     glPopMatrix();
     }}
-    string name;
 
+void highScoreWindow(){
+    if(highScoreWindowFlag){
+    if(!highScoreWindowFillFlag&&instrSize<=0.6)
+        instrSize+=0.004166667;
+    if(instrSize>=0.59){
+      output(400,500,"Name",1);
+      output(700,500,"Score",1);
+      set< pair<int,string> >::reverse_iterator iter;int itc=0;
+      for(iter=highScoreList.rbegin();iter!=highScoreList.rend()&&itc<10;iter++,itc++){
+        output(400,450-50*itc,(*iter).second.c_str(),1);
+        char tempdis[30];
+        sprintf(tempdis,"%d",(*iter).first);
+        output(700,450-50*itc,tempdis,1);
+      }
+    }
+    if(highScoreWindowFillFlag&&instrSize>=0)
+        instrSize-=0.004166667;
+    if(instrSize<0.001){instrSize=0;
+        highScoreWindowFlag=false;}
+    glPushMatrix();
+    drawObject(25,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
+    glPopMatrix();
+    }
+}
+
+    string name;
     //For displaying and taking and showing the input from highscore menu
 void highScoreMenu(){
 drawObject(24,171,96,1024,576);
@@ -503,16 +540,20 @@ if(scankey==8&&scankeyCount==0)
 else if(scankey!=0&&scankeyCount==0)
 name.append(&scankey);
 output(500,450,name.c_str(),2);
-if(scankey==13){
+if(scankey==13&&scankeyCount==0){
   highScoreFlag=false;
-  pair<string,int> highScorePair(name,highScoreInt);
+  pair <int,string> highScorePair(highScoreInt,name);
   highScoreList.insert(highScorePair);
-  set< pair<string,int>>::iterator iter;
+  set< pair <int,string>>::iterator iter;
   for(iter=highScoreList.begin();iter!=highScoreList.end();iter++){
-  cout<<(*iter).first<<"\t"<<(*iter).second<<endl;
-  name.erase();
-  scankey=-100;
-}
+  cout<<(*iter).second<<"\t"<<(*iter).first<<endl;
+
+}scankey=-100;
+char tempname[30];
+strcpy(tempname,name.c_str());
+tempname[name.size()-1]='\0';
+fprintf(highScoreFile,"%s\t%d\n",tempname,highScoreInt );
+name.erase();
 }
 char score[30];
 sprintf(score,"%d",highScoreInt);
@@ -536,6 +577,7 @@ void menuScreen(){
     menuEggMove();
     instructionMenu();
     aboutMenu();
+    highScoreWindow();
     if(highScoreFlag)
         highScoreMenu();
     glutSwapBuffers();
@@ -773,7 +815,8 @@ switch(key){
     case 49:menuFlag=false;gameFlag=true;counter=0;
      break;
      case '2':if(!instrFlag){instrFlag=true;instrFullFlag=false;}break;
-     case 27:if(instrFlag)instrFullFlag=true;if(aboutFlag)aboutFillFlag=true;break;
+     case 27:if(instrFlag)instrFullFlag=true;if(aboutFlag)aboutFillFlag=true;if(highScoreWindowFlag)highScoreWindowFillFlag=true;break;
+     case '3':if(!highScoreWindowFlag){highScoreWindowFlag=true;highScoreWindowFillFlag=false;}break;
      case '4':if(!aboutFlag){aboutFlag=true;aboutFillFlag=false;}break;
      case '5':exit(0);
 }
@@ -789,6 +832,7 @@ int main(int argc, char** argv){
     //initialize mode and open a windows in upper left corner of screen
     //Windows tittle is name of program
     srand(time(NULL));
+    load_highscore();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(1366,768);
@@ -803,5 +847,5 @@ int main(int argc, char** argv){
     glutKeyboardFunc(keyPress);
     glutSpecialFunc(keyboardown);
     glutMouseFunc(mouse);
-    glutMainLoop();
+    glutMainLoop();fclose(highScoreFile);
 }
