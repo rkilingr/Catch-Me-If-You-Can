@@ -507,7 +507,9 @@ void instructionMenu(){
     }}
 
 void highScoreWindow(){
-    if(highScoreWindowFlag){
+    if(highScoreWindowFlag){glPushMatrix();
+    drawObject(25,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
+    glPopMatrix();
     if(!highScoreWindowFillFlag&&instrSize<=0.6)
         instrSize+=0.004166667;
     if(instrSize>=0.59){
@@ -515,19 +517,17 @@ void highScoreWindow(){
       output(700,500,"Score",1);
       set< pair<int,string> >::reverse_iterator iter;int itc=0;
       for(iter=highScoreList.rbegin();iter!=highScoreList.rend()&&itc<10;iter++,itc++){
-        output(400,450-50*itc,(*iter).second.c_str(),1);
+        output(400,450-40*itc,(*iter).second.c_str(),1);
         char tempdis[30];
         sprintf(tempdis,"%d",(*iter).first);
-        output(700,450-50*itc,tempdis,1);
+        output(700,450-40*itc,tempdis,1);
       }
     }
     if(highScoreWindowFillFlag&&instrSize>=0)
         instrSize-=0.004166667;
     if(instrSize<0.001){instrSize=0;
         highScoreWindowFlag=false;}
-    glPushMatrix();
-    drawObject(25,683-1366*instrSize/2.0,384-768*instrSize/2.0,1366*instrSize,768*instrSize);
-    glPopMatrix();
+
     }
 }
 
